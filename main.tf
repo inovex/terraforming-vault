@@ -7,4 +7,6 @@ module "k8s-pki" {
     }
   }
   vault_address = var.vault_address
+  organization  = "inovex GmbH"
+  ou            = "Terraforming Task Force"
 }

@@ -23,8 +23,8 @@ resource "vault_pki_secret_backend_root_cert" "k8s_ca" {
   key_type             = "rsa"
   key_bits             = 4096
   exclude_cn_from_sans = true
-  ou                   = "Terraforming Task Force"
-  organization         = "inovex GmbH"
+  ou                   = var.ou
+  organization         = var.organization
 }
 
 resource "vault_pki_secret_backend_config_urls" "k8s_config_urls" {
@@ -57,8 +57,8 @@ resource "vault_pki_secret_backend_root_cert" "etcd_ca" {
   key_type             = "rsa"
   key_bits             = 4096
   exclude_cn_from_sans = true
-  ou                   = "Terraforming Task Force"
-  organization         = "inovex GmbH"
+  ou                   = var.ou
+  organization         = var.organization
 }
 
 resource "vault_pki_secret_backend_config_urls" "etcd_config_urls" {

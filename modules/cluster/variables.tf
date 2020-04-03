@@ -6,3 +6,11 @@ variable "clusters" {
 variable "vault_address" {
   type = string
 }
+
+variable "organization" {
+  type = string
+}
+
+variable "ou" {
+  type = string
+}
