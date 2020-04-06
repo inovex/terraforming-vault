@@ -6,7 +6,7 @@ resource "vault_mount" "k8s_pki" {
 
   type                  = "pki"
   path                  = "clusters/${each.key}/pkis/k8s"
-  max_lease_ttl_seconds = each.value.max_cert_ttl
+  max_lease_ttl_seconds = each.value.ca_ttl
 }
 
 resource "vault_pki_secret_backend_root_cert" "k8s_ca" {
@@ -17,7 +17,7 @@ resource "vault_pki_secret_backend_root_cert" "k8s_ca" {
 
   type                 = "internal"
   common_name          = "kubernetes-ca"
-  ttl                  = "315360000"
+  ttl                  = each.value.ca_ttl
   format               = "pem"
   private_key_format   = "der"
   key_type             = "rsa"
@@ -34,13 +34,36 @@ resource "vault_pki_secret_backend_config_urls" "k8s_config_urls" {
   issuing_certificates = ["${var.vault_address}/v1/${vault_mount.k8s_pki[each.key].path}/ca"]
 }
 
+resource "vault_pki_secret_backend_role" "k8s_master_role" {
+  for_each = var.clusters
+  backend  = vault_mount.k8s_pki[each.key].path
+
+  name           = "master"
+  allow_any_name = true
+  allow_ip_sans  = true
+
+  max_ttl = each.value.cert_ttl
+  ttl = each.value.cert_ttl
+
+  allowed_domains = [
+    "kube-apiserver",
+    "kube-apiserver-kubelet-client"
+  ]
+
+  allowed_uri_sans = each.value.apiserver_hostnames
+
+  key_usage = ["DigitalSignature", "KeyEncipherment"]
+  # ServerAuth is required for kube-apiserver cert, ClientAuth for kube-apiserver-kubelet-client
+  ext_key_usage = ["ServerAuth", "ClientAuth"]
+}
+
 ## etcd
 resource "vault_mount" "etcd_pki" {
   for_each = var.clusters
 
   type                  = "pki"
   path                  = "clusters/${each.key}/pkis/etcd"
-  max_lease_ttl_seconds = each.value.max_cert_ttl
+  max_lease_ttl_seconds = each.value.ca_ttl
 }
 
 resource "vault_pki_secret_backend_root_cert" "etcd_ca" {
@@ -51,7 +74,7 @@ resource "vault_pki_secret_backend_root_cert" "etcd_ca" {
 
   type                 = "internal"
   common_name          = "etcd-ca"
-  ttl                  = "315360000"
+  ttl                  = each.value.ca_ttl
   format               = "pem"
   private_key_format   = "der"
   key_type             = "rsa"

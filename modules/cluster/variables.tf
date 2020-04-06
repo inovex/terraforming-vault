@@ -1,5 +1,5 @@
 variable "clusters" {
-  type        = map(object({ max_cert_ttl = number }))
+  type        = map(object({ cert_ttl = number, ca_ttl = number, apiserver_hostnames = list(string) }))
   description = "Name of the kubernetes cluster to create a PKI for"
 }
 

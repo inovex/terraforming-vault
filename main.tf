@@ -3,7 +3,9 @@ module "k8s-pki" {
 
   clusters = {
     "qa-cluster" = {
-      "max_cert_ttl" = 3600
+      "ca_ttl" =  14400
+      "cert_ttl" = 3600
+      "apiserver_hostnames" = ["node1.inovex.com", "node2.inovex.com"]
     }
   }
   vault_address = var.vault_address
