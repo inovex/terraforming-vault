@@ -1,6 +1,6 @@
 # Terraforming Vault
 
-Simple Demo for showcasing the possibility of filling your vault with terraform by creating a kubernetes CA.
+Simple Demo for showcasing the possibility of filling your vault with terraform by creating a Vault PKi for a kubernetes CA. **Please note**, that the configs are not extensively tested but rather serve to showcase the terraforming of vault.
 
 ## Set up a test vault
 
