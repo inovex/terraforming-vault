@@ -84,19 +84,25 @@ resource "vault_pki_secret_backend_role" "k8s_master_role" {
     "kube-apiserver-kubelet-client"
   ]
 
-  allowed_uri_sans = each.value.apiserver_hostnames
+  allowed_uri_sans = concat(each.value.apiserver_hostnames, [
+    "kubernetes.default.svc.cluster.local",
+    "kubernetes.default.svc.cluster",
+    "kubernetes.default.svc",
+    "kubernetes.default",
+    "kubernetes",
+  ])
 
   key_usage = ["DigitalSignature", "KeyEncipherment"]
   # ServerAuth is required for kube-apiserver cert, ClientAuth for kube-apiserver-kubelet-client
   ext_key_usage = ["ServerAuth", "ClientAuth"]
 }
 
-## 	kubernetes-front-proxy-ca
+## kubernetes-front-proxy-ca
 resource "vault_mount" "k8s_front_proxy_pki" {
   for_each = var.clusters
 
   type                  = "pki"
-  path                  = "clusters/${each.key}/pkis/k8s_front_proxy"
+  path                  = "clusters/${each.key}/pkis/k8s-front-proxy"
   max_lease_ttl_seconds = each.value.ca_ttl
 }
 

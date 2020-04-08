@@ -1,6 +1,6 @@
 {
     "common_name": "kube-apiserver",
-    "uri_sans": "node1.inovex.de",
+    "uri_sans": "node1.inovex.de,kubernetes.default.svc.cluster.local,kubernetes.default.svc.cluster,kubernetes.default.svc,kubernetes.default,kubernetes",
     "subject": "o=system:masters",
     "key_usage": "DigitalSignature,KeyEncipherment",
     "ext_key_usage":"ServerAuth"
