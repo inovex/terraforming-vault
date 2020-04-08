@@ -34,6 +34,30 @@ resource "vault_pki_secret_backend_config_urls" "etcd_config_urls" {
   issuing_certificates = ["${var.vault_address}/v1/${vault_mount.etcd_pki[each.key].path}/ca"]
 }
 
+resource "vault_pki_secret_backend_role" "etcd_master_role" {
+  for_each = var.clusters
+  backend  = vault_mount.etcd_pki[each.key].path
+
+  name           = "master"
+  allow_any_name = true
+  allow_ip_sans  = true
+
+  max_ttl = each.value.cert_ttl
+  ttl     = each.value.cert_ttl
+
+  allowed_domains = [
+    "kube-etcd",
+    "kube-etcd-peer",
+    "kube-etcd-healthcheck-client",
+    "kube-apiserver-etcd-client"
+  ]
+
+  allowed_uri_sans = concat(each.value.apiserver_hostnames, ["localhost"])
+
+  key_usage = ["DigitalSignature", "KeyEncipherment"]
+  ext_key_usage = ["ServerAuth", "ClientAuth"]
+}
+
 ## kubernetes-ca
 resource "vault_mount" "k8s_pki" {
   for_each = var.clusters
