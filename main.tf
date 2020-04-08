@@ -3,8 +3,8 @@ module "k8s-pki" {
 
   clusters = {
     "qa-cluster" = {
-      "ca_ttl" =  14400
-      "cert_ttl" = 3600
+      "ca_ttl"              = 14400
+      "cert_ttl"            = 3600
       "apiserver_hostnames" = ["node1.inovex.com", "node2.inovex.com"]
     }
   }
