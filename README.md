@@ -27,12 +27,34 @@ terraform apply --auto-approve
 
 ### Example usage: Issue a certificate for the api-server
 
+After applying you should see an AppRole role_id in your output such as
+
+```
+...
+Apply complete! Resources: 15 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+approles = {
+  "qa-cluster_master" = "<totally-secret-token>"
+}
+```
+
+This role_id can be used to login to your vault and get a client token:
+
+```sh
+APPROLE_ID=$(terraform output | grep "qa-cluster_master" | cut -d= -f2 | tr -d '" ')
+CLIENT_TOKEN=$(curl -sf ${VAULT_ADDR}/v1/auth/approle/login -XPOST --data "{\"role_id\": \"${APPROLE_ID}\"}" | jq -er ".auth.client_token")
+```
+
+With this client_token we can then issue a certificate, in this case for kube-apiserver:
+
 ```sh
 # issue a certificate
-JSON=$(curl -fs --header "X-Vault-Token: ${VAULT_TOKEN}" -XPOST --data @example-issue/apiserver.json ${VAULT_ADDR}/v1/clusters/qa-cluster/pkis/k8s/issue/master)
+CERT_JSON=$(curl -fs --header "X-Vault-Token: ${CLIENT_TOKEN}" -XPOST --data @example-issue/apiserver.json ${VAULT_ADDR}/v1/clusters/qa-cluster/pkis/k8s/issue/master)
 # get cert and private key from json response
-jq -r ".data.certificate" <<< "$JSON" > apiserver_node1_cert.pem
-jq -r ".data.private_key" <<< "$JSON" > apiserver_node1_key.pem
+jq -er ".data.certificate" <<< "$CERT_JSON" > apiserver_node1_cert.pem
+jq -er ".data.private_key" <<< "$CERT_JSON" > apiserver_node1_key.pem
 # you can retrieve the ca directly from vault
 curl -fs -o ca.pem ${VAULT_ADDR}/v1/clusters/qa-cluster/pkis/k8s/ca/pem
 ```

@@ -1,3 +1,8 @@
+# approle auth backend used by nodes to issue their certs
+resource "vault_auth_backend" "approle" {
+  type = "approle"
+}
+
 module "k8s-pki" {
   source = "./modules/cluster"
 
@@ -8,6 +13,7 @@ module "k8s-pki" {
       "apiserver_hostnames" = ["node1.inovex.de", "node2.inovex.de"]
     }
   }
+  approle_path  = vault_auth_backend.approle.path
   vault_address = var.vault_address
   organization  = "inovex GmbH"
   ou            = "Terraforming Task Force"
