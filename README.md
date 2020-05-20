@@ -12,7 +12,7 @@ Simple Demo for showcasing the possibility of filling your vault with terraform 
 ```sh
 export VAULT_TOKEN="token234"
 export VAULT_ADDR='http://127.0.0.1:8200'
-vault server -dev -dev-root-token-id=${VAULT_TOKEN} >/dev/null &
+vault server -dev -dev-root-token-id=${VAULT_TOKEN} &>/dev/null &
 ```
 
 ## Terraform the vault
@@ -29,7 +29,7 @@ terraform apply --auto-approve
 
 After applying you should see an AppRole role_id in your output such as
 
-```
+```sh
 ...
 Apply complete! Resources: 15 added, 0 changed, 0 destroyed.
 
@@ -43,7 +43,7 @@ approles = {
 This role_id can be used to login to your vault and get a client token:
 
 ```sh
-APPROLE_ID=$(terraform output | grep "qa-cluster_master" | cut -d= -f2 | tr -d '" ')
+APPROLE_ID=$(terraform output -json approles | jq -r '."qa-cluster_master"')
 CLIENT_TOKEN=$(curl -sf ${VAULT_ADDR}/v1/auth/approle/login -XPOST --data "{\"role_id\": \"${APPROLE_ID}\"}" | jq -er ".auth.client_token")
 ```
 
@@ -59,7 +59,7 @@ jq -er ".data.private_key" <<< "$CERT_JSON" > apiserver_node1_key.pem
 curl -fs -o ca.pem ${VAULT_ADDR}/v1/clusters/qa-cluster/pkis/k8s/ca/pem
 ```
 
-and vaildate the certificates:
+and validate the certificates:
 
 ```bash
 $ openssl verify -CAfile ca.pem apiserver_node1_cert.pem
